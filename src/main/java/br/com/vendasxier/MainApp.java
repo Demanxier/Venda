@@ -42,8 +42,17 @@ public class MainApp {
                     System.out.println("Endereco do cliente: ");
                     String endereco = scanner.nextLine();
 
+                    System.out.println("É cliente VIP? (s/n): ");
+                    String respostaVIP = scanner.nextLine().trim();
+
                     try {
-                        clienteService.cadastrarCliente(new Cliente(nome, endereco));
+                        Cliente cliente;
+                        if (respostaVIP.equalsIgnoreCase("s")){
+                            cliente = new ClienteVIP(nome, endereco);
+                        }else {
+                            cliente = new Cliente(nome, endereco);
+                        }
+                        clienteService.cadastrarCliente(cliente);
                     } catch (IllegalArgumentException e) {
                         System.err.println("Erro: " + e.getMessage());
                     }
@@ -82,8 +91,25 @@ public class MainApp {
                     FormaPagamento forma = FormaPagamento.valueOf(scanner.nextLine().toUpperCase());
 
                     Venda venda = new Venda(clienteOpt.get(), itens, forma, 0, null);
+                    double total = venda.getItens().stream()
+                                    .mapToDouble(item -> item.getQuantidade() * item.getProduto().getPreco())
+                                    .sum();
+                    if (venda.getCliente() instanceof ClienteVIP){
+                        double desconto = total * ((ClienteVIP) venda.getCliente()).getDesconto();
+                        total -= desconto;
+                    }
+                    venda.setTotal(total);
+
                     vendaService.processarVenda(venda);
-                    System.out.println("Venda em processamento...");
+                    System.out.println("Venda realizada.");
+                    System.out.println("Total: R$" + venda.getTotal());
+                    if (venda.getCliente() instanceof ClienteVIP){
+                        double valorOriginal = venda.getTotal() / 0.90;
+                        System.out.println("Parabéns, você é VIP! 10% de desconto aplicado.");
+                        System.out.printf("Valor original: R$ %.2f%n", valorOriginal);
+                        System.out.printf("Valor final: R$ %.2f%n", venda.getTotal());
+                    }
+                    System.out.println("___________");
                     break;
                 case 4:
                     scanner.nextLine();

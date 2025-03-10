@@ -1,6 +1,7 @@
 package br.com.vendasxier.repository;
 
 import br.com.vendasxier.model.Cliente;
+import br.com.vendasxier.model.ClienteVIP;
 import br.com.vendasxier.util.DatabaseConfig;
 
 import java.sql.*;
@@ -12,7 +13,7 @@ public class ClienteRepository {
 
     // Metodo para inserir novo cliente.
     public void cadastrarCliente(Cliente cliente){
-        String sql = "INSERT INTO clientes (nome, endereco) VALUES (?,?)";
+        String sql = "INSERT INTO clientes (nome, endereco, is_vip) VALUES (?,?,?)";
 
         // Try-with-resources: fecha automaticamente conexão e statement
         try(Connection conn = DatabaseConfig.getConnection();
@@ -20,6 +21,7 @@ public class ClienteRepository {
 
             ps.setString(1, cliente.getNome());
             ps.setString(2, cliente.getEndereco());
+            ps.setBoolean(3, cliente instanceof ClienteVIP);
             ps.executeUpdate();
 
             System.out.println("Cliente cadastrado com sucesso: " + cliente.getNome());
